@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>timer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #111;
+      color: #00ffcc;
+      flex-direction: column;
+    }
+    h1 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    #timer {
+      font-size: 1.5rem;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎟️ timer 11.am</h1>
+  <div id="timer">00:00:00.000</div>
+
+  <script>
+    async function getServerTime() {
+      const res = await fetch('https://ticket.interpark.com', { method: 'HEAD' });
+      const serverDate = res.headers.get('date');
+      return new Date(serverDate);
+    }
+
+    function getNext11AMKST(now) {
+      const next = new Date(now);
+      next.setUTCHours(2, 0, 0, 0); // UTC 02:00 == KST 11:00
+      if (now.getUTCHours() >= 2) {
+        next.setUTCDate(next.getUTCDate() + 1);
+      }
+      return next;
+    }
+
+    async function startCountdown() {
+      const serverNow = await getServerTime();
+      const clientNow = new Date();
+      const timeOffset = serverNow.getTime() - clientNow.getTime();
+
+      const targetTimeUTC = getNext11AMKST(serverNow).getTime();
+
+      function updateTimer() {
+        const syncedNow = new Date().getTime() + timeOffset;
+        const remain = targetTimeUTC - syncedNow;
+
+        if (remain <= 0) {
+          document.getElementById('timer').innerText = "티켓팅 시작!";
+          return;
+        }
+
+        const hours = String(Math.floor(remain / (1000 * 60 * 60))).padStart(2, '0');
+        const minutes = String(Math.floor((remain % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+        const seconds = String(Math.floor((remain % (1000 * 60)) / 1000)).padStart(2, '0');
+        const milliseconds = String(remain % 1000).padStart(3, '0');
+
+        document.getElementById('timer').innerText = `${hours}:${minutes}:${seconds}.${milliseconds}`;
+        requestAnimationFrame(updateTimer);
+      }
+
+      requestAnimationFrame(updateTimer);
+    }
+
+    startCountdown();
+  </script>
+</body>
+</html>

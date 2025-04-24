@@ -1,0 +1,12 @@
+{
+  "name": "timer",
+  "version": "1.0.0",
+  "main": "main.js",
+  "description": "PC 타이머",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^29.0.0"
+  }
+}
